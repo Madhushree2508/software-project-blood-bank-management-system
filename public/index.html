@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HEMOLINK - Intelligent 3-Tier Blood Bank Management System. Track blood inventory, verify donor eligibility, process hospital transfusion requests, and monitor expiry in real time.">
+  <meta name="keywords" content="Blood Bank Management, Blood Inventory, Donor Eligibility, Hospital Requests, Software Engineering">
+  <meta name="author" content="Antigravity SE Engineering">
+  <title>HEMOLINK | Intelligent Blood Bank Management System</title>
+
+  <!-- Google Fonts & Chart.js -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Top Emergency Alert Ticker -->
+  <div class="emergency-ticker">
+    <div class="ticker-content">
+      <span class="pulse-dot"></span>
+      <span><strong>EMERGENCY LIFELINE:</strong> Central Blood Bank Cold Chain Operational 24/7 &bull; Real-time Stock Sync Active</span>
+    </div>
+    <div style="font-size: 0.8rem; opacity: 0.9;">
+      Helpline: +91 1800-BLOOD-SAVE
+    </div>
+  </div>
+
+  <!-- Header Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <!-- Brand Logo -->
+      <a href="#" class="brand" title="Hemolink Home">
+        <div class="brand-icon">🩸</div>
+        <div class="brand-text">
+          <h1>HEMOLINK</h1>
+          <span>Blood Bank Management</span>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav-links">
+        <li class="nav-item">
+          <button type="button" class="active" data-target-view="home">
+            <span>🏥</span> Overview & Stock
+          </button>
+        </li>
+        <li class="nav-item role-restricted-nav" data-require-role="donor">
+          <button type="button" data-target-view="donor">
+            <span>🙋</span> Donor Portal
+          </button>
+        </li>
+        <li class="nav-item role-restricted-nav" data-require-role="recipient">
+          <button type="button" data-target-view="recipient">
+            <span>🚑</span> Hospital Portal
+          </button>
+        </li>
+        <li class="nav-item role-restricted-nav" data-require-role="admin">
+          <button type="button" data-target-view="admin">
+            <span>⚙️</span> Admin Console
+          </button>
+        </li>
+        <li class="nav-item">
+          <button type="button" data-target-view="reports">
+            <span>📊</span> Analytics & Reports
+          </button>
+        </li>
+      </ul>
+
+      <!-- 1-Click Role Switcher for Academic Demo / Presentation -->
+      <div class="demo-role-switcher" title="Instant Presentation Role Switcher">
+        <button type="button" class="demo-role-btn active" data-demo-role="guest">👤 Guest</button>
+        <button type="button" class="demo-role-btn" data-demo-role="donor">🩸 Donor</button>
+        <button type="button" class="demo-role-btn" data-demo-role="recipient">🏥 Hospital</button>
+        <button type="button" class="demo-role-btn" data-demo-role="admin">🛡️ Admin</button>
+      </div>
+
+      <!-- User Auth State -->
+      <div class="nav-actions">
+        <div id="user-nav-area">
+          <button class="btn btn-primary btn-sm" id="btn-open-login">
+            <span>🔑</span> Login / Register
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-wrapper">
+
+    <!-- ================================================================= -->
+    <!-- VIEW 1: HOME & LIVE INVENTORY OVERVIEW                             -->
+    <!-- ================================================================= -->
+    <section id="view-home" class="view-panel active">
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span>💉</span> 3-Tier Architecture &bull; Real-time Cold Chain
+          </div>
+          <h2 class="hero-title">Every Drop Counts.<br>Every Second Matters.</h2>
+          <p class="hero-subtitle">
+            A state-of-the-art blood bank management system connecting voluntary donors, emergency hospital ICUs, and cold-storage inventories with automated FIFO shelf-life management.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" data-open-modal="modal-blood-request">
+              <span>🚑</span> Emergency Blood Request
+            </button>
+            <button class="btn btn-outline" data-open-modal="modal-auth" style="color: #fff; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3);">
+              <span>❤️</span> Register as Donor
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-red">🩸</div>
+          <div class="metric-info">
+            <h4 id="stat-total-stock">-- Units</h4>
+            <p>Active Usable Blood</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-amber">⏳</div>
+          <div class="metric-info">
+            <h4 id="stat-near-expiry">-- Units</h4>
+            <p>Near Expiry (&lt; 7 Days)</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-green">🛡️</div>
+          <div class="metric-info">
+            <h4>42 Days</h4>
+            <p>Cold Chain Shelf Life</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-blue">👥</div>
+          <div class="metric-info">
+            <h4>8 Types</h4>
+            <p>ABO & Rh Monitored</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood Matrix Grid -->
+      <div class="section-header">
+        <div>
+          <h3 class="section-title">Live Blood Group Availability Matrix</h3>
+          <p class="section-desc">Click any blood group to instantly inspect stock and find nearby emergency donors.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadHomeData()">
+          <span>🔄</span> Refresh Stock
+        </button>
+      </div>
+
+      <div class="blood-matrix" id="home-blood-matrix">
+        <!-- Rendered dynamically by JavaScript -->
+      </div>
+
+      <!-- Live Search & Emergency Donor Finder -->
+      <div class="search-bar-card">
+        <div class="section-header" style="margin-bottom: 12px;">
+          <div>
+            <h4 style="font-size: 1.15rem; font-weight: 700;">🔍 Search Live Blood Stock & Emergency Donors</h4>
+            <p class="section-desc">Filter available units and verified donors by blood group and city location.</p>
+          </div>
+        </div>
+        <div class="search-form-row">
+          <div class="form-group">
+            <label for="search-blood-group">Blood Group</label>
+            <select class="form-control" id="search-blood-group">
+              <option value="All">All Blood Groups</option>
+              <option value="A+">A+ (A Positive)</option>
+              <option value="A-">A- (A Negative)</option>
+              <option value="B+">B+ (B Positive)</option>
+              <option value="B-">B- (B Negative)</option>
+              <option value="AB+">AB+ (AB Positive)</option>
+              <option value="AB-">AB- (AB Negative)</option>
+              <option value="O+">O+ (O Positive)</option>
+              <option value="O-">O- (O Negative)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="search-city">City / Region</label>
+            <input type="text" class="form-control" id="search-city" placeholder="e.g. Bangalore, Mysore..." value="Bangalore">
+          </div>
+          <div style="min-width: 140px;">
+            <button class="btn btn-primary" id="btn-run-search" style="width: 100%;">
+              <span>🔎</span> Search
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Results Area -->
+        <div id="search-results-area"></div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 2: DONOR PORTAL & ELIGIBILITY CHECK                          -->
+    <!-- ================================================================= -->
+    <section id="view-donor" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Donor Profile & Medical Dashboard</h2>
+          <p class="section-desc">Track your donation eligibility, view your certificates, and book your next donation appointment.</p>
+        </div>
+      </div>
+
+      <!-- Dynamic Eligibility Status Banner -->
+      <div id="donor-eligibility-card" class="eligibility-banner eligible">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Donor Profile Card -->
+      <div class="grid-2">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title"><span>👤</span> Donor Profile Information</h3>
+            <span class="badge badge-danger" id="donor-blood-badge" style="font-size: 1rem;">O+</span>
+          </div>
+          <table class="data-table">
+            <tbody>
+              <tr><th style="width: 40%;">Full Name</th><td id="donor-name">--</td></tr>
+              <tr><th>Age / Eligibility</th><td id="donor-age">--</td></tr>
+              <tr><th>Phone Contact</th><td id="donor-phone">--</td></tr>
+              <tr><th>Registered City</th><td id="donor-city">--</td></tr>
+              <tr><th>Last Donation Date</th><td id="donor-last-date">--</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title"><span>💡</span> Eligibility Guidelines</h3>
+          </div>
+          <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;">
+            <li><strong>Age Requirement:</strong> Minimum 18 years of age.</li>
+            <li><strong>Cooldown Period:</strong> At least 90 days (3 months) must elapse between whole blood donations.</li>
+            <li><strong>Minimum Weight:</strong> Must weigh at least 50 kg (110 lbs).</li>
+            <li><strong>Hemoglobin:</strong> At least 12.5 g/dL verified at the center.</li>
+            <li><strong>General Health:</strong> Well-rested, hydrated, and free from active infections or fever.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Donation History Table -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>📜</span> My Blood Donation History</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Donation Date</th>
+                <th>Blood Group</th>
+                <th>Volume Collected</th>
+                <th>Hemoglobin</th>
+                <th>Status</th>
+                <th>Clinical Notes</th>
+              </tr>
+            </thead>
+            <tbody id="donor-history-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 3: RECIPIENT & HOSPITAL PORTAL                               -->
+    <!-- ================================================================= -->
+    <section id="view-recipient" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Hospital & Recipient Request Center</h2>
+          <p class="section-desc">Submit urgent transfusion requisitions, monitor fulfillment status, and track dispatch.</p>
+        </div>
+        <button class="btn btn-primary" data-open-modal="modal-blood-request">
+          <span>➕</span> New Blood Request
+        </button>
+      </div>
+
+      <!-- Requests Tracker Table -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>🚑</span> Active & Past Blood Requests</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Patient Name</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Urgency</th>
+                <th>Request Date</th>
+                <th>Status</th>
+                <th>Admin / Dispatch Notes</th>
+              </tr>
+            </thead>
+            <tbody id="recipient-requests-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 4: ADMIN COMMAND CENTER                                      -->
+    <!-- ================================================================= -->
+    <section id="view-admin" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Admin Command & Inventory Management</h2>
+          <p class="section-desc">Evaluate transfusion requests, log physical donations, monitor shelf-life, and maintain safe blood reserves.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-success" data-open-modal="modal-intake-donation">
+            <span>💉</span> Record Blood Intake
+          </button>
+          <button class="btn btn-danger btn-outline" id="btn-discard-expired">
+            <span>🗑️</span> Discard Expired Units
+          </button>
+        </div>
+      </div>
+
+      <!-- Pending Hospital Requests (Approval Queue) -->
+      <div class="panel-card" style="margin-bottom: 24px;">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>📋</span> Hospital Transfusion Requisitions (Approval Console)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Req ID</th>
+                <th>Hospital / Facility</th>
+                <th>Patient Name</th>
+                <th>Blood Group</th>
+                <th>Units</th>
+                <th>Urgency</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-requests-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detailed Blood Units Cold Chain Tracker -->
+      <div class="panel-card" style="margin-bottom: 24px;">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>❄️</span> Cold Chain Blood Inventory Units (FIFO Monitored)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Bag / Unit Code</th>
+                <th>Blood Group</th>
+                <th>Donation Date</th>
+                <th>Expiry Date (+42 Days)</th>
+                <th>Storage Bay</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admin-inventory-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Registered Donors Directory -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>👥</span> Registered Donors Directory</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Blood Group</th>
+                <th>Age / Gender</th>
+                <th>Phone</th>
+                <th>City</th>
+                <th>Last Donation</th>
+                <th>Eligibility</th>
+              </tr>
+            </thead>
+            <tbody id="admin-donors-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- VIEW 5: ANALYTICS & REPORTS                                       -->
+    <!-- ================================================================= -->
+    <section id="view-reports" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">System Analytics & Executive Reports</h2>
+          <p class="section-desc">Key performance indicators, blood group distribution, donation trends, and request fulfillment metrics.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadReportsView()">
+          <span>🔄</span> Refresh Charts
+        </button>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-red">📊</div>
+          <div class="metric-info">
+            <h4 id="rep-total-donations">--</h4>
+            <p>Donations Completed</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-green">🎯</div>
+          <div class="metric-info">
+            <h4 id="rep-fulfillment-rate">--%</h4>
+            <p>Request Fulfillment Rate</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-blue">📋</div>
+          <div class="metric-info">
+            <h4 id="rep-total-requests">--</h4>
+            <p>Total Hospital Orders</p>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon-wrap icon-amber">🩸</div>
+          <div class="metric-info">
+            <h4 id="rep-active-units">--</h4>
+            <p>Units Currently in Stock</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Charts Grid -->
+      <div class="grid-2">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title"><span>📊</span> Blood Units Stock by Blood Group</h3>
+          </div>
+          <div style="height: 300px;">
+            <canvas id="chart-stock-distribution"></canvas>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title"><span>📈</span> Monthly Blood Donations Trend</h3>
+          </div>
+          <div style="height: 300px;">
+            <canvas id="chart-monthly-trend"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card" style="max-width: 600px; margin: 0 auto;">
+        <div class="panel-header">
+          <h3 class="panel-title"><span>🥧</span> Request Status Breakdown</h3>
+        </div>
+        <div style="height: 280px;">
+          <canvas id="chart-request-status"></canvas>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =================================================================== -->
+  <!-- MODALS                                                              -->
+  <!-- =================================================================== -->
+
+  <!-- 1. Authentication Modal (Login / Register) -->
+  <div class="modal-backdrop" id="modal-auth">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="auth-modal-title">Account Login</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <form id="form-auth">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="auth-email">Email Address</label>
+            <input type="email" class="form-control" id="auth-email" required placeholder="name@domain.com">
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="auth-password">Password</label>
+            <input type="password" class="form-control" id="auth-password" required placeholder="••••••••">
+          </div>
+
+          <!-- Dynamic registration fields -->
+          <div id="register-extra-fields" style="display: none;">
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="reg-name">Full Name / Hospital Name</label>
+              <input type="text" class="form-control" id="reg-name" placeholder="Dr. Sarah Johnson">
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="reg-role">Role</label>
+              <select class="form-control" id="reg-role">
+                <option value="donor">Donor</option>
+                <option value="recipient">Hospital / Recipient</option>
+                <option value="admin">Administrator</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="reg-phone">Phone Number</label>
+              <input type="text" class="form-control" id="reg-phone" placeholder="+91 9876543210">
+            </div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label for="reg-city">City</label>
+              <input type="text" class="form-control" id="reg-city" placeholder="Bangalore">
+            </div>
+
+            <!-- Donor specific -->
+            <div id="donor-fields">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="reg-blood-group">Blood Group</label>
+                <select class="form-control" id="reg-blood-group">
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="reg-age">Age (Must be &ge; 18)</label>
+                <input type="number" class="form-control" id="reg-age" value="24" min="16" max="75">
+              </div>
+            </div>
+
+            <!-- Recipient specific -->
+            <div id="recipient-fields" style="display: none;">
+              <div class="form-group" style="margin-bottom: 14px;">
+                <label for="reg-hospital">Hospital Name</label>
+                <input type="text" class="form-control" id="reg-hospital" placeholder="City Care Multispeciality">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <button type="button" class="btn btn-outline btn-sm" id="btn-toggle-auth-mode">
+            Don't have an account? Register
+          </button>
+          <button type="submit" class="btn btn-primary" id="btn-auth-submit">
+            Login
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Blood Request Modal -->
+  <div class="modal-backdrop" id="modal-blood-request">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Emergency Blood Request Form</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <form id="form-blood-request">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="req-patient-name">Patient Name / Case ID *</label>
+            <input type="text" class="form-control" id="req-patient-name" required placeholder="e.g. Ramesh Kumar (ICU-3)">
+          </div>
+          <div class="grid-2" style="margin-bottom: 14px; gap: 12px;">
+            <div class="form-group">
+              <label for="req-blood-group">Blood Group Required *</label>
+              <select class="form-control" id="req-blood-group" required>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="req-units">Units Required *</label>
+              <input type="number" class="form-control" id="req-units" min="1" max="10" value="1" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="req-urgency">Urgency Level</label>
+            <select class="form-control" id="req-urgency">
+              <option value="Routine">Routine Elective Procedure</option>
+              <option value="Urgent">Urgent Transfusion Required</option>
+              <option value="Critical Emergency">Critical Emergency (Immediate)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="req-hospital-name">Hospital / Facility Name</label>
+            <input type="text" class="form-control" id="req-hospital-name" placeholder="e.g. Fortis Hospital, Cunningham Road">
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="req-doctor-name">Attending Doctor / Physician</label>
+            <input type="text" class="form-control" id="req-doctor-name" placeholder="Dr. S. K. Roy">
+          </div>
+          <div class="form-group">
+            <label for="req-reason">Clinical Indication / Notes</label>
+            <textarea class="form-control" id="req-reason" rows="2" placeholder="e.g. Severe blood loss following acute trauma / Hemoglobin &lt; 6.5"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Transfusion Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Book Donation Slot Modal -->
+  <div class="modal-backdrop" id="modal-book-donation">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Book a Blood Donation Slot</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <form id="form-book-donation">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="book-date">Preferred Date</label>
+            <input type="date" class="form-control" id="book-date" required>
+          </div>
+          <div class="form-group">
+            <label for="book-notes">Special Requests / Center Preference</label>
+            <textarea class="form-control" id="book-notes" rows="2" placeholder="Morning slot preferred / Central Bay"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-success">Confirm Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 4. Admin Log Blood Donation Intake Modal -->
+  <div class="modal-backdrop" id="modal-intake-donation">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Record Blood Donation Intake</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <form id="form-intake-donation">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="intake-donor-select">Select Registered Donor *</label>
+            <select class="form-control" id="intake-donor-select" required></select>
+          </div>
+          <div class="grid-2" style="margin-bottom: 14px; gap: 12px;">
+            <div class="form-group">
+              <label for="intake-date">Donation Date *</label>
+              <input type="date" class="form-control" id="intake-date" required>
+            </div>
+            <div class="form-group">
+              <label for="intake-hb">Hemoglobin Level (g/dL)</label>
+              <input type="number" step="0.1" class="form-control" id="intake-hb" value="14.2">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-bottom: 14px; gap: 12px;">
+            <div class="form-group">
+              <label for="intake-bp">Blood Pressure</label>
+              <input type="text" class="form-control" id="intake-bp" value="120/80">
+            </div>
+            <div class="form-group">
+              <label for="intake-pulse">Pulse Rate (bpm)</label>
+              <input type="number" class="form-control" id="intake-pulse" value="72">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="intake-notes">Session Remarks</label>
+            <textarea class="form-control" id="intake-notes" rows="2" placeholder="Donor felt normal, standard 450ml bag collected, cold stored."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+          <button type="submit" class="btn btn-success">Log Donation & Add Unit to Stock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 5. Admin Request Action Modal -->
+  <div class="modal-backdrop" id="modal-request-action">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="action-modal-title">Process Blood Request</h3>
+        <button class="modal-close" data-modal-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="action-modal-desc" style="margin-bottom: 16px; color: var(--text-muted);"></p>
+        <div class="form-group">
+          <label for="action-notes">Administrative Decision Notes</label>
+          <textarea class="form-control" id="action-notes" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-modal-close>Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm-action">Confirm Decision</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <strong>HEMOLINK Blood Bank Management System</strong> &bull; Software Engineering Project
+      </div>
+      <div>
+        3-Tier Architecture (Client &bull; REST API &bull; Database) &bull; Built with Node.js & Express
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    // Set default date inputs to today
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      const bookDate = document.getElementById('book-date');
+      if (bookDate) bookDate.value = today;
+      const intakeDate = document.getElementById('intake-date');
+      if (intakeDate) intakeDate.value = today;
+    });
+  </script>
+</body>
+</html>
